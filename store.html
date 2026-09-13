@@ -21,12 +21,18 @@
     <section id="loginView" class="login"><div class="card"><div class="mark">🍽️</div><h1>เข้าสู่ระบบร้านค้า</h1><p>เข้าสู่ระบบด้วยอีเมลหรือ Login ID ที่ผู้ดูแลออกให้ ระบบจะแสดงเฉพาะข้อมูลร้านและออร์เดอร์ที่ผูกกับบัญชีของคุณ</p><div class="field"><label>อีเมล หรือ Login ID</label><input id="storeIdentifier" autocomplete="username" autocapitalize="none" placeholder="เช่น store.cafe หรือ owner@apservice.com" /></div><div class="field" style="margin-top:12px"><label>รหัสผ่าน</label><input id="storePassword" type="password" autocomplete="current-password" placeholder="รหัสผ่านของคุณ" /></div><button id="loginBtn" class="btn btn-main" style="width:100%;margin-top:14px">เข้าสู่ Store Console</button><div class="notice" style="margin-top:14px">บัญชีร้านค้าจัดการได้เฉพาะร้าน เมนู และออร์เดอร์ของตนเอง ข้อมูลจะซิงก์ไปยังลูกค้า แอดมิน และไรเดอร์อัตโนมัติ</div></div></section>
     <section id="dashboardView" class="hidden">
       <section class="hero"><div><div class="eyebrow">STORE WORKSPACE</div><h1 id="storeTitle">จัดการร้านค้า</h1><p>จัดการหน้าร้าน เวลาเปิด–ปิด เมนู ราคา สต็อก และการรับออร์เดอร์จากจุดเดียว</p></div><div class="hero-art">🍽️</div></section>
-      <nav class="store-nav" aria-label="เมนู Store Console"><button class="active" data-store-page="home">ภาพรวม</button><button data-store-page="orders">ออร์เดอร์</button><button data-store-page="menu">เมนูและสต็อก</button><button data-store-page="settlements">ยอดขายและรอรับเงิน</button><button data-store-page="profile">หน้าร้านและเวลา</button></nav><button id="storeBackButton" type="button" class="console-back">กลับหน้าก่อนหน้า</button>
+      <nav class="store-nav" aria-label="เมนู Store Console"><button class="active" data-store-page="home">ภาพรวม</button><button data-store-page="orders">ออร์เดอร์</button><button data-store-page="menu">เมนูและสต็อก</button><button data-store-page="settlements">ยอดขายและรอรับเงิน</button><button data-store-page="coupons">คูปอง</button><button data-store-page="profile">หน้าร้านและเวลา</button></nav><button id="storeBackButton" type="button" class="console-back">กลับหน้าก่อนหน้า</button>
       <section class="store-page active" id="storePage-home">
       <div class="stats"><div class="stat"><small>ออร์เดอร์ใหม่</small><b id="newOrders">0</b><small>รอยืนยัน/เริ่มเตรียม</small></div><div class="stat"><small>กำลังเตรียม</small><b id="preparingOrders">0</b><small>รอไรเดอร์รับสินค้า</small></div><div class="stat"><small>เมนูพร้อมขาย</small><b id="availableFoods">0</b><small>จากรายการเมนูทั้งหมด</small></div></div>
       <section class="home-finance" aria-label="สรุปยอดขายร้าน"><div class="section-head" style="margin:0"><div><h2 style="font-size:15px">ภาพรวมยอดขายและกระเป๋าเงิน</h2><p class="finance-caption">ยอดขายรวมแสดงทุกออร์เดอร์ที่ไม่ถูกยกเลิก ส่วนยอดพร้อมถอนจะเกิดเมื่อระบบบันทึกรายได้ที่ปิดงานแล้ว</p></div><span id="homeSalesStatus" class="status">กำลังโหลด</span></div><div id="storeHomeFinance" class="stats"><div class="stat"><small>ยอดขายทั้งหมด</small><b>฿0</b></div><div class="stat"><small>พร้อมถอน</small><b>฿0</b></div></div></section>
       </section>
       <section class="store-page" id="storePage-settlements"><div class="section-head"><div><h2>ยอดขาย กระเป๋าเงิน และสถานะรับเงิน</h2><p>ยอดสะสมข้ามวันจะคงอยู่จนกว่าจะรับเงินจริงหรือส่งคำขอถอนเงิน</p></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-main btn-sm" type="button" onclick="requestStoreWithdrawal()">ร้องขอถอนเงิน</button><button class="btn btn-plain btn-sm" type="button" onclick="refreshStoreSettlements()">รีเฟรช</button></div></div><div id="storeSettlementSummary" class="stats"></div><div id="storeWithdrawalSummary" style="margin-top:12px"></div><section class="card"><h3>รายการรอรับเงินและประวัติการรับเงิน</h3><p>ยอดที่แสดงเป็นยอดสุทธิหลังหัก GP ตามข้อตกลงที่ผู้ดูแลตั้งไว้</p><div id="storeSettlementList"></div></section></section>
+      <section class="store-page" id="storePage-coupons">
+      <div class="section-head"><div><h2>คูปองของร้าน</h2><p>ส่งคำขอคูปองให้แอดมินอนุมัติ คูปองที่อนุมัติแล้วจะผูกกับร้านของคุณเท่านั้น</p></div><button class="btn btn-plain btn-sm" type="button" onclick="StoreCoupons.load().then(()=>toast('รีเฟรชคูปองแล้ว')).catch(e=>toast(e.message))">รีเฟรช</button></div>
+      <section class="card"><h3>ส่งคำขอคูปองใหม่</h3><p>แอดมินจะตรวจสอบและสร้างรหัสคูปองให้หลังอนุมัติ</p><div class="form-grid"><div class="field"><label>ชื่อคูปอง *</label><input id="cpName" maxlength="120" placeholder="เช่น ส่วนลดเปิดร้านใหม่" /></div><div class="field"><label>ประเภทส่วนลด *</label><select id="cpType"><option value="percent">ลดเป็นเปอร์เซ็นต์</option><option value="fixed">ลดเป็นจำนวนเงิน (บาท)</option></select></div><div class="field"><label>มูลค่าส่วนลด *</label><input id="cpValue" type="number" min="0.01" step="0.01" placeholder="เช่น 10 หรือ 20" /></div><div class="field"><label>ยอดสั่งซื้อขั้นต่ำ (บาท)</label><input id="cpMin" type="number" min="0" step="0.01" value="0" /></div><div class="field"><label>จำนวนสิทธิ์รวม</label><input id="cpMax" type="number" min="1" placeholder="ว่าง = ไม่จำกัด" /></div><div class="field"><label>จำกัดต่อคน</label><input id="cpLimit" type="number" min="1" value="1" /></div><div class="field"><label>เริ่มใช้</label><input id="cpStart" type="datetime-local" /></div><div class="field"><label>หมดอายุ</label><input id="cpEnd" type="datetime-local" /></div><div class="field full"><label>รายละเอียด/เงื่อนไข</label><textarea id="cpDesc" maxlength="500" placeholder="เงื่อนไขที่ลูกค้าควรรู้"></textarea></div><div class="field full"><button id="cpSubmit" class="btn btn-main">ส่งคำขอให้แอดมิน</button></div></div></section>
+      <section class="card" style="margin-top:16px"><h3>คำขอของฉัน</h3><p>ติดตามสถานะการอนุมัติจากแอดมิน</p><div id="storeCouponRequests"><div class="empty">ยังไม่มีคำขอคูปอง</div></div></section>
+      <section class="card" style="margin-top:16px"><h3>คูปองของร้านที่ใช้งานได้</h3><p>คูปองที่อนุมัติแล้วและผูกกับร้านของคุณ</p><div id="storeCouponOwn"><div class="empty">ยังไม่มีคูปองของร้าน</div></div></section>
+      </section>
       <section class="store-page" id="storePage-profile">
       <div class="section-head"><div><h2>หน้าร้าน เวลา และจุดรับสินค้า</h2><p>แก้ข้อมูลที่ลูกค้าและ Rider เห็นจากหน้านี้</p></div></div>
       <div class="grid">
@@ -169,6 +175,69 @@
   <script>
     /* Do not release transfer orders to the store before Admin payment review. */
     (()=>{const baseFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const raw=String(input||'');if(raw.includes('/rest/v1/delivery_orders?')&&raw.includes('store_id=eq.')){try{const url=new URL(raw);url.searchParams.set('status','not.in.("รอตรวจสอบการชำระเงิน","ต้องแนบสลิปใหม่")');return baseFetch(url.toString(),init)}catch(error){console.warn('Store payment-status filter skipped',error)}}return baseFetch(input,init)}})();
+  </script>
+  <script>
+    /* Store coupon requests: merchant asks, admin approves, coupon binds to this store. */
+    const StoreCoupons = {
+      requests: [], own: [],
+      async load() {
+        const s = store(); if (!s) return;
+        const [requests, own] = await Promise.all([
+          Cloud.request('merchant_coupon_requests?select=*&store_id=eq.' + encodeURIComponent(s.id) + '&order=created_at.desc&limit=100'),
+          Cloud.request('coupons?select=id,code,name,description,discount_type,discount_value,min_order_amount,starts_at,ends_at,status,active&owner_store_id=eq.' + encodeURIComponent(s.id) + '&order=created_at.desc&limit=100')
+        ]);
+        this.requests = requests || []; this.own = own || [];
+        this.render();
+      },
+      render() {
+        const reqHost = $('#storeCouponRequests'), ownHost = $('#storeCouponOwn');
+        if (reqHost) reqHost.innerHTML = this.requests.length ? this.requests.map(r => {
+          const value = r.discount_type === 'percent' ? `${r.discount_value}%` : money(r.discount_value);
+          const status = { pending: 'รอตรวจสอบ', approved: 'อนุมัติแล้ว', rejected: 'ปฏิเสธแล้ว', cancelled: 'ยกเลิกแล้ว' }[r.status] || r.status;
+          return `<div class="order"><div class="order-top"><div><b>${esc(r.name)}</b><small>${esc(value)} · ขั้นต่ำ ${esc(money(r.min_order_amount || 0))} · ${esc(status)}</small></div><span class="status${r.status === 'pending' ? ' wait' : ''}">${esc(status)}</span></div>${r.admin_note ? `<div class="order-info">หมายเหตุแอดมิน: ${esc(r.admin_note)}</div>` : ''}${r.status === 'pending' ? `<div class="order-actions"><button class="btn btn-plain btn-sm" type="button" onclick="StoreCoupons.cancel('${r.id}')">ยกเลิกคำขอ</button></div>` : ''}</div>`;
+        }).join('') : '<div class="empty">ยังไม่มีคำขอคูปอง</div>';
+        if (ownHost) ownHost.innerHTML = this.own.length ? this.own.map(c => {
+          const value = c.discount_type === 'percent' ? `${c.discount_value}%` : money(c.discount_value);
+          const on = c.active !== false;
+          return `<div class="order"><div class="order-top"><div><b>${esc(c.name)}</b><small>รหัส ${esc(c.code)} · ${esc(value)} · ขั้นต่ำ ${esc(money(c.min_order_amount || 0))}</small></div><span class="status${on ? '' : ' closed'}">${on ? 'ใช้งานได้' : 'ปิดใช้งาน'}</span></div></div>`;
+        }).join('') : '<div class="empty">ยังไม่มีคูปองของร้าน</div>';
+      },
+      async submit() {
+        const s = store(); if (!s) return toast('กรุณาเข้าสู่ระบบร้านค้าก่อน');
+        const value = {
+          store_id: s.id,
+          name: $('#cpName').value.trim(),
+          description: $('#cpDesc').value.trim(),
+          discount_type: $('#cpType').value,
+          discount_value: Number($('#cpValue').value),
+          min_order_amount: Number($('#cpMin').value || 0),
+          max_redemptions: $('#cpMax').value ? Number($('#cpMax').value) : null,
+          per_customer_limit: Number($('#cpLimit').value || 1),
+          starts_at: $('#cpStart').value ? new Date($('#cpStart').value).toISOString() : new Date().toISOString(),
+          ends_at: $('#cpEnd').value ? new Date($('#cpEnd').value).toISOString() : null
+        };
+        if (!value.name || !Number.isFinite(value.discount_value) || value.discount_value <= 0) return toast('กรอกชื่อและมูลค่าส่วนลดให้ถูกต้อง');
+        if (value.discount_type === 'percent' && value.discount_value > 100) return toast('ส่วนลดเปอร์เซ็นต์ต้องไม่เกิน 100');
+        try {
+          await Cloud.request('merchant_coupon_requests', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(value) });
+          $('#cpName').value = ''; $('#cpDesc').value = ''; $('#cpValue').value = ''; $('#cpMax').value = '';
+          await this.load();
+          toast('ส่งคำขอคูปองแล้ว รอแอดมินอนุมัติ');
+        } catch (e) { toast(e.message || 'ส่งคำขอไม่สำเร็จ'); }
+      },
+      async cancel(id) {
+        if (!confirm('ยกเลิกคำขอนี้หรือไม่?')) return;
+        try {
+          await Cloud.request('merchant_coupon_requests?id=eq.' + encodeURIComponent(id), { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ status: 'cancelled', updated_at: new Date().toISOString() }) });
+          await this.load();
+          toast('ยกเลิกคำขอแล้ว');
+        } catch (e) { toast(e.message || 'ยกเลิกไม่สำเร็จ'); }
+      }
+    };
+    window.StoreCoupons = StoreCoupons;
+    $('#cpSubmit').onclick = () => StoreCoupons.submit();
+    const storeCouponRender = render;
+    render = () => { storeCouponRender(); StoreCoupons.load().catch(() => {}); };
   </script>
   <script src="./shared/ap-central-config-fallback.js?v=central-config-v1"></script>
 </body>
