@@ -2,7 +2,7 @@ const fs = require('fs');
 const assert = require('assert');
 const source = fs.readFileSync('merchant/merchant-app.js', 'utf8');
 assert.match(source, /async function login\(\)/, 'Merchant ต้องมี login flow');
-assert.match(source, /aria-label="อีเมล"/, 'Merchant login ต้องคง label สำหรับ accessibility');
+assert.match(source, /aria-label="ชื่อผู้ใช้ Merchant"/, 'Merchant login ต้องคง label สำหรับ accessibility');
 assert.match(source, /aria-label="รหัสผ่าน"/, 'Merchant login ต้องคง label สำหรับ accessibility');
 assert.doesNotMatch(source, /href="\.\.\/store\.html"/, 'Merchant ต้องไม่พาไปยัง legacy store route ที่เลิกใช้แล้ว');
 assert.doesNotMatch(source, /aria-label="เปิดหน้าร้านแบบเดิม"/, 'Merchant ต้องไม่แสดง fallback link ที่เลิกใช้แล้ว');
