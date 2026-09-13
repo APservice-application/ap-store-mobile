@@ -162,7 +162,7 @@
   root.APServiceMPA = Object.freeze({ version: 'mpa-runtime-v3', config: { url: SUPABASE_URL, publishableKey: SUPABASE_KEY }, request: lifecycle.request, requestCount: lifecycle.requestCount, network: lifecycle, auth: { getSession, refreshSession, signIn, signInWithUsername, signUp, updatePassword, signOut, confirmSignOut, currentUser, rolesFor, requireRole }, ui: { escapeHtml, baht, nowIso, loading, error, empty, setNotice }, cart });
   function installImageSourceChoices() {
     const isImageInput = input => input?.matches?.('input[type="file"]') && /image\//i.test(String(input.getAttribute('accept') || ''));
-    const existingSourceControl = input => /^(เลือกจากคลัง|ถ่ายรูป|เปลี่ยนจากคลัง|ถ่ายรูปใหม่)/.test(String(input.closest('label')?.textContent || '').replace(/\s+/g, ' ').trim()) || Boolean(input.closest('[data-image-source-choices]'));
+    const existingSourceControl = input => /^(เลือกจากคลัง|ถ่ายจากกล้อง|ถ่ายรูป|เปลี่ยนจากคลัง|ถ่ายรูปใหม่)/.test(String(input.closest('label')?.textContent || '').replace(/\s+/g, ' ').trim()) || Boolean(input.closest('[data-image-source-choices]'));
     const enhance = input => {
       if (!isImageInput(input) || input.dataset.imageSourceChoices === 'true' || existingSourceControl(input)) return;
       input.dataset.imageSourceChoices = 'true'; input.hidden = true; input.tabIndex = -1;

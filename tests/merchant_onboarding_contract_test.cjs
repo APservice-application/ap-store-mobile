@@ -2,7 +2,7 @@ const fs = require('fs');
 const assert = require('assert');
 
 const app = fs.readFileSync('merchant/merchant-app.js', 'utf8');
-assert.match(app, /MERCHANT_APP_BUILD = '2026\.09\.13\.06'/, 'ต้อง bump build .06');
+assert.match(app, /MERCHANT_APP_BUILD = '2026\.09\.13\.07'/, 'ต้อง bump build .07');
 assert.match(app, /profile_pct,profile_exempt,profile_missing&owner_id=eq/, 'ownStore ต้องดึงฟิลด์ onboarding');
 assert.match(app, /pickup_address,open_time,close_time,emergency_closed,emergency_note/, 'ownStore ต้องดึงที่อยู่/เวลา/สถานะฉุกเฉิน');
 assert.match(app, /ONBOARDING_LABELS/, 'ต้องมี label เช็กลิสต์ภาษาไทย');

@@ -1,0 +1,189 @@
+/* Merchant beauty layer v1 — modern cards, picker pills, settings hub. Additive only. */
+body {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+button, summary, a.mpa-button, label.mpa-button { touch-action: manipulation; }
+:focus-visible {
+  outline: 3px solid rgba(38, 152, 103, .35);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* ---------- image picker pills (single pair, side by side) ---------- */
+.mbeauty-section .mpa-field:has(> label.mpa-button) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+}
+.mbeauty-section .mpa-field > label:not(.mpa-button) { flex: 1 1 100%; }
+.mbeauty-section .mpa-field > img { flex: 0 0 auto; }
+label.mpa-button {
+  cursor: pointer;
+  justify-self: start;
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+}
+label.mpa-button input[type="file"][hidden] { display: none !important; }
+.mpa-menu-media .mpa-button,
+.mpa-menu-card__image-actions .mpa-button { width: auto; }
+
+/* ---------- grouped sections ---------- */
+.mbeauty-section {
+  background: linear-gradient(180deg, #fbfefd, #f4faf6) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 10px 26px rgba(25, 104, 64, .07);
+}
+.mbeauty-section h2 {
+  color: var(--merchant-ui-deep, #14633f);
+  font-size: 17px;
+}
+#weeklyHours fieldset {
+  background: #fbfefd;
+  border-radius: 16px !important;
+  box-shadow: 0 6px 16px rgba(25, 104, 64, .05);
+}
+#weeklyHours legend {
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--merchant-ui-deep, #14633f);
+  padding: 2px 10px;
+  background: #eaf9f1;
+  border-radius: 999px;
+}
+.mpa-field input, .mpa-field select, .mpa-field textarea {
+  border-radius: 13px;
+  border-width: 1.5px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.mpa-field input:hover, .mpa-field select:hover, .mpa-field textarea:hover { border-color: #b9dcc8; }
+
+/* ---------- cards & lists ---------- */
+.mpa-menu-card, .mpa-order-card, .mpa-finance-row {
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+.mpa-menu-card:hover, .mpa-order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(25, 104, 64, .10);
+}
+.mpa-menu-card__media { border-radius: 13px 0 0 13px; overflow: hidden; }
+.mpa-table tbody tr:nth-child(even) { background: #f8fcfa; }
+.mpa-table tbody tr:hover { background: #eef8f2; }
+.mpa-badge { letter-spacing: .01em; }
+
+/* ---------- onboarding card ---------- */
+[data-onboarding-card] ul a {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #eef6ff;
+  border: 1px solid #cfe3f7;
+  text-decoration: none;
+  font-weight: 800;
+}
+[data-onboarding-card] ul a:hover { background: #ddedfd; }
+
+/* ---------- settings hub ---------- */
+.mbeauty-menu {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+.mbeauty-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: var(--ap-paper, #fff);
+  border: 1.5px solid var(--ap-line, #e5eeec);
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 8px 22px rgba(25, 104, 64, .06);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.mbeauty-menu-item:hover {
+  transform: translateY(-2px);
+  border-color: #b9dcc8;
+  box-shadow: 0 14px 30px rgba(25, 104, 64, .12);
+}
+.mbeauty-menu-item:active { transform: scale(.985); }
+.mbeauty-menu-icon {
+  flex: 0 0 auto;
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #eaf9f1, #d8f0e3);
+  box-shadow: inset 0 0 0 1px #c4e7d2;
+}
+.mbeauty-menu-copy { flex: 1 1 auto; min-width: 0; }
+.mbeauty-menu-copy strong { display: block; font-size: 15px; color: var(--merchant-ui-ink, #1d392d); }
+.mbeauty-menu-copy small { color: var(--merchant-ui-muted, #6b8175); font-size: 12px; }
+.mbeauty-menu-go {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #eaf9f1;
+  color: var(--merchant-ui-deep, #14633f);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+/* ---------- collapsible panels ---------- */
+.mbeauty-details { margin-top: 16px; padding: 0 !important; overflow: hidden; }
+.mbeauty-details > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px;
+  font-weight: 900;
+  font-size: 15px;
+  color: var(--merchant-ui-ink, #1d392d);
+}
+.mbeauty-details > summary::-webkit-details-marker { display: none; }
+.mbeauty-details > summary small { color: var(--merchant-ui-muted, #6b8175); font-weight: 700; }
+.mbeauty-details[open] > summary { border-bottom: 1.5px solid var(--ap-line, #e5eeec); }
+.mbeauty-details-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .22s ease;
+}
+.mbeauty-details[open] .mbeauty-details-body { grid-template-rows: 1fr; }
+.mbeauty-details-body > form { overflow: hidden; min-height: 0; padding: 0 16px; }
+.mbeauty-details[open] .mbeauty-details-body > form { padding: 16px; }
+.mpa-menu-card__edit summary {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #f2f9f5;
+}
+
+/* ---------- topbar & nav ---------- */
+.mpa-topbar { border-radius: 0 0 20px 20px; }
+.mpa-nav { scrollbar-width: thin; }
+.mpa-nav a { border: 1.5px solid transparent; }
+.mpa-nav a.active { border-color: #bde6cf; }
+
+/* ---------- toast ---------- */
+.mpa-toast { border-radius: 16px; backdrop-filter: blur(8px); }
+
+@media (max-width: 560px) {
+  .mbeauty-menu-item { padding: 14px; gap: 12px; }
+  .mbeauty-menu-icon { width: 44px; height: 44px; font-size: 21px; }
+  .mpa-menu-media { flex-direction: column; align-items: stretch; text-align: center; }
+  .mpa-menu-media img { margin: 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mbeauty-menu-item, .mpa-menu-card, .mpa-order-card, .mbeauty-details-body { transition: none !important; }
+}
