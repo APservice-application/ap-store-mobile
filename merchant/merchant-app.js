@@ -9,6 +9,7 @@
   const newEntityId = prefix => `${prefix}-${typeof crypto?.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
   const invokeEdge = async payload => { const session = await M.auth.refreshSession(false); if (!session?.access_token) throw new Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'); const response = await fetch(`${M.config.url}/functions/v1/role-access`, { method: 'POST', headers: { apikey: M.config.publishableKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json().catch(() => null); if (!response.ok) throw new Error(result?.error || 'ดำเนินการไม่สำเร็จ'); return result; };
   if (!document.getElementById('merchant-modern-theme-style')) document.head.insertAdjacentHTML('beforeend', '<link id="merchant-modern-theme-style" rel="stylesheet" href="merchant-modern-theme.css?v=merchant-soft-art-v1">');
+  if (!document.getElementById('merchant-pro-grid-style')) document.head.insertAdjacentHTML('beforeend', '<link id="merchant-pro-grid-style" rel="stylesheet" href="merchant-pro-grid.css?v=merchant-pro-v1">');
   const page = document.body.dataset.page;
   const ensurePushScripts = onReady => {
     if (window.APPush) { onReady(); return; }
@@ -28,7 +29,7 @@
     window.APPush?.init({ request: (path, options) => M.request(path, options), currentUser: () => M.auth.currentUser(), notify: (title, body) => M.ui.setNotice(`${title} · ${body}`, 'info') });
   } catch (_) {} });
   try { Promise.resolve(M.auth.sessionRestoreReady).then(() => M.auth.currentUser()).then(user => { if (user) bootPush(); }).catch(() => {}); } catch (_) {}
-  const MERCHANT_APP_BUILD = '2026.09.13.03';
+  const MERCHANT_APP_BUILD = '2026.09.13.04';
   window.APServiceMerchantBuild = MERCHANT_APP_BUILD;
   const pageScope = name => { const scope = M.network.createScope(name); addEventListener('pagehide', () => scope.dispose(), { once: true }); return scope; };
   const links = [['dashboard', 'ภาพรวม'], ['orders', 'ออร์เดอร์'], ['menu', 'เมนู'], ['store', 'ข้อมูลร้าน'], ['finance', 'การเงิน'], ['notifications', 'แจ้งเตือน'], ['settings', 'ตั้งค่า']];
