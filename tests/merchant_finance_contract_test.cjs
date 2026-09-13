@@ -19,5 +19,8 @@ assert.match(app, /startBackgroundSync\(\{ key: `merchant-finance:/, 'Finance mu
 assert.match(app, /addEventListener\('pagehide', \(\) => \{ stop\(\); stopSales\(\); \}/, 'Finance must stop settlement and sales refresh work on pagehide');
 assert.match(app, /maskedAccount/, 'Payout account numbers must be masked in the UI');
 assert.match(shell, /merchant-app\.js\?v=merchant-sales-v1/, 'Finance shell must request the released sales analytics script version');
+assert.match(app, /rpc\/wallet_summary/, 'กระเป๋าร้านต้องอ่านยอดถอนได้จริงจาก server');
+assert.match(app, /action: 'merchant_request_withdrawal'/, 'ฟอร์มถอนต้องยื่นผ่าน server action ที่คุมเพดานยอด');
+assert.match(app, /withdrawal_requests\?select=id,amount,status/, 'ร้านต้องเห็นประวัติคำขอถอนของตัวเอง');
 assert.match(css, /mpa-finance-summary/, 'Finance must have responsive presentation styles');
 console.log('merchant finance contract: passed');
