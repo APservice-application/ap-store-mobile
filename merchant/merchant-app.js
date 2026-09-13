@@ -10,6 +10,24 @@
   const invokeEdge = async payload => { const session = await M.auth.refreshSession(false); if (!session?.access_token) throw new Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'); const response = await fetch(`${M.config.url}/functions/v1/role-access`, { method: 'POST', headers: { apikey: M.config.publishableKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json().catch(() => null); if (!response.ok) throw new Error(result?.error || 'ดำเนินการไม่สำเร็จ'); return result; };
   if (!document.getElementById('merchant-modern-theme-style')) document.head.insertAdjacentHTML('beforeend', '<link id="merchant-modern-theme-style" rel="stylesheet" href="merchant-modern-theme.css?v=merchant-soft-art-v1">');
   const page = document.body.dataset.page;
+  const ensurePushScripts = onReady => {
+    if (window.APPush) { onReady(); return; }
+    if (document.getElementById('merchant-push-script')) return;
+    const config = document.createElement('script');
+    config.src = '../shared/ap-push-config.js?v=push-v1';
+    config.onload = () => {
+      const lib = document.createElement('script');
+      lib.id = 'merchant-push-script'; lib.src = '../shared/ap-push.js?v=push-v1';
+      lib.onload = onReady; lib.onerror = () => {};
+      document.head.appendChild(lib);
+    };
+    config.onerror = () => {};
+    document.head.appendChild(config);
+  };
+  const bootPush = () => ensurePushScripts(() => { try {
+    window.APPush?.init({ request: (path, options) => M.request(path, options), currentUser: () => M.auth.currentUser(), notify: (title, body) => M.ui.setNotice(`${title} · ${body}`, 'info') });
+  } catch (_) {} });
+  try { Promise.resolve(M.auth.sessionRestoreReady).then(() => M.auth.currentUser()).then(user => { if (user) bootPush(); }).catch(() => {}); } catch (_) {}
   const MERCHANT_APP_BUILD = '2026.09.13.03';
   window.APServiceMerchantBuild = MERCHANT_APP_BUILD;
   const pageScope = name => { const scope = M.network.createScope(name); addEventListener('pagehide', () => scope.dispose(), { once: true }); return scope; };
