@@ -19,11 +19,15 @@ assert.match(app, /uploadPublicCatalogImage/, 'menu image upload must reuse shar
 assert.match(app, /mediaType: 'PRODUCT_IMAGE'/, 'menu images must declare the product media profile');
 assert.doesNotMatch(app, /type="url"/, 'menu must not expose URL image input');
 assert.match(menuRoute, /ap-service-media\.js\?v=shared-media-v5/, 'menu route must load media pipeline before app code');
-assert.match(menuRoute, /merchant-app\.js\?v=merchant-ui-v2/, 'menu route must bust the previous app cache');
-assert.match(ordersRoute, /merchant-app\.js\?v=merchant-ui-v2/, 'orders route must bust the previous app cache');
+assert.match(menuRoute, /merchant-app\.js\?v=merchant-ui-v3-admin-release/, 'menu route must bust the previous app cache');
+assert.match(ordersRoute, /merchant-app\.js\?v=merchant-ui-v3-admin-release/, 'orders route must bust the previous app cache');
 assert.match(media, /DEFAULT_MAX_DIMENSION = 1200/, 'media max dimension must be 1200px');
 assert.match(media, /PRODUCT_IMAGE: Object\.freeze\(\{ maxDimension: 1200/, 'product uploads must use 1200px profile');
 assert.match(media, /let quality = 0\.82/, 'media compression must start at JPEG quality 0.82');
 assert.match(media, /const type = 'image\/jpeg';/, 'all image uploads must be encoded as JPEG');
 
+assert.match(app, /releasedOrdersOnly\(\)/, 'orders และ dashboard ต้องกรองเฉพาะออเดอร์ที่แอดมินปล่อยแล้ว');
+assert.match(app, /status=not\.in\.\(/, 'คำขอออเดอร์ร้านต้องตัดสถานะก่อนปล่อยออกที่ฝั่งเซิร์ฟเวอร์');
+assert.match(app, /S\.ADMIN_REVIEW \|\| 'รอแอดมินตรวจสอบ'/, 'ร้านค้าต้องไม่เห็นออเดอร์ที่รอแอดมินตรวจสอบ');
+assert.match(app, /S\.PAYMENT_REVIEW \|\| 'รอตรวจสอบการชำระเงิน'/, 'ร้านค้าต้องไม่เห็นออเดอร์ที่รอตรวจสอบการชำระเงิน');
 console.log('merchant_orders_menu_contract_test: passed');

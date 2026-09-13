@@ -2,6 +2,8 @@
   'use strict';
   const M = window.APServiceMPA;
   const C = window.APServiceCore;
+  const preReleaseStatuses = () => { const S = C?.contracts?.orderStatus || {}; return [S.ADMIN_REVIEW || 'รอแอดมินตรวจสอบ', S.PAYMENT_REVIEW || 'รอตรวจสอบการชำระเงิน', S.PAYMENT_RETRY || 'ต้องแนบสลิปใหม่', S.CREDIT_REVIEW || 'รอตรวจสอบเครดิต']; };
+  const releasedOrdersOnly = () => `&status=not.in.(${preReleaseStatuses().map(value => encodeURIComponent(value)).join(',')})`;
   const $ = selector => document.querySelector(selector);
   const h = M.ui.escapeHtml;
   const newEntityId = prefix => `${prefix}-${typeof crypto?.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
@@ -75,7 +77,7 @@
     const ctx = await gate('dashboard', `<div class="mpa-page-head"><div><h1>ภาพรวมร้านค้า</h1><p>สรุปข้อมูลร้านและออร์เดอร์ที่ได้รับสิทธิ์</p></div><button class="mpa-button mpa-button-secondary" id="out">ออกจากระบบ</button></div><div id="content">${M.ui.loading('กำลังโหลดข้อมูลร้าน…')}</div>`);
     if (!ctx) return;
     $('#out').onclick = () => M.auth.signOut('login.html');
-    const scope = pageScope('merchant:dashboard'); const path = `delivery_orders?select=id,status,payable&store_id=eq.${encodeURIComponent(ctx.store.id)}&order=ordered_at.desc&limit=200`; let lastSignature = '';
+    const scope = pageScope('merchant:dashboard'); const path = `delivery_orders?select=id,status,payable&store_id=eq.${encodeURIComponent(ctx.store.id)}${releasedOrdersOnly()}&order=ordered_at.desc&limit=200`; let lastSignature = '';
     const render = orders => {
       const signature = JSON.stringify((orders || []).map(row => [row.id, row.status, row.payable])); if (signature === lastSignature) return; lastSignature = signature;
       const active = orders.filter(row => !['สำเร็จแล้ว', 'ยกเลิก'].includes(row.status));
@@ -89,7 +91,7 @@
   async function orders() {
     const ctx = await gate('orders', `<div class="mpa-page-head"><div><h1>ออร์เดอร์ของร้าน</h1><p>แยกออร์เดอร์ใหม่ งานที่กำลังดำเนินการ และประวัติ โดยเปลี่ยนสถานะได้เฉพาะที่ Shared Core อนุญาต</p></div></div><section id="list" class="mpa-order-stack">${M.ui.loading('กำลังโหลดออร์เดอร์…')}</section>`);
     if (!ctx) return;
-    const scope = pageScope('merchant:orders'); const path = `delivery_orders?select=id,customer_name,status,total,payable,ordered_at,updated_at,delivery_address,note,payment_method&store_id=eq.${encodeURIComponent(ctx.store.id)}&order=ordered_at.desc&limit=200`; let lastSignature = '', hasInitialOrderSnapshot = false; const knownOrderIds = new Set();
+    const scope = pageScope('merchant:orders'); const path = `delivery_orders?select=id,customer_name,status,total,payable,ordered_at,updated_at,delivery_address,note,payment_method&store_id=eq.${encodeURIComponent(ctx.store.id)}${releasedOrdersOnly()}&order=ordered_at.desc&limit=200`; let lastSignature = '', hasInitialOrderSnapshot = false; const knownOrderIds = new Set();
     const alertNewOrders = rows => { const incoming = (rows || []).filter(row => bucketFor(row.status) === 'new' && row.id && !knownOrderIds.has(row.id)); (rows || []).forEach(row => { if (row.id) knownOrderIds.add(row.id); }); if (!hasInitialOrderSnapshot) { hasInitialOrderSnapshot = true; return; } if (!incoming.length || localStorage.getItem('apservice.merchant.order-alert-muted') === 'true') return; M.ui.setNotice(`มีออร์เดอร์ใหม่ ${incoming.length} รายการ กรุณาตรวจสอบในคิวออร์เดอร์`); try { const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return; const audio = new AudioContext(); const oscillator = audio.createOscillator(); const gain = audio.createGain(); oscillator.type = 'sine'; oscillator.frequency.value = 880; gain.gain.setValueAtTime(0.0001, audio.currentTime); gain.gain.exponentialRampToValueAtTime(0.12, audio.currentTime + 0.02); gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.28); oscillator.connect(gain).connect(audio.destination); oscillator.start(); oscillator.stop(audio.currentTime + 0.3); setTimeout(() => audio.close?.(), 500); } catch (_) { /* Browser permission can block audio; visual notice remains the fallback. */ } };
     const bucketFor = status => {
       const text = String(status || '');
