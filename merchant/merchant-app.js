@@ -10,10 +10,10 @@
   const invokeEdge = async payload => { const session = await M.auth.refreshSession(false); if (!session?.access_token) throw new Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'); const response = await fetch(`${M.config.url}/functions/v1/role-access`, { method: 'POST', headers: { apikey: M.config.publishableKey, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); const result = await response.json().catch(() => null); if (!response.ok) throw new Error(result?.error || 'ดำเนินการไม่สำเร็จ'); return result; };
   if (!document.getElementById('merchant-modern-theme-style')) document.head.insertAdjacentHTML('beforeend', '<link id="merchant-modern-theme-style" rel="stylesheet" href="merchant-modern-theme.css?v=merchant-soft-art-v1">');
   const page = document.body.dataset.page;
-  const MERCHANT_APP_BUILD = '2026.09.13.02';
+  const MERCHANT_APP_BUILD = '2026.09.13.03';
   window.APServiceMerchantBuild = MERCHANT_APP_BUILD;
   const pageScope = name => { const scope = M.network.createScope(name); addEventListener('pagehide', () => scope.dispose(), { once: true }); return scope; };
-  const links = [['dashboard', 'ภาพรวม'], ['orders', 'ออร์เดอร์'], ['menu', 'เมนู'], ['store', 'ข้อมูลร้าน'], ['finance', 'การเงิน'], ['settings', 'ตั้งค่า']];
+  const links = [['dashboard', 'ภาพรวม'], ['orders', 'ออร์เดอร์'], ['menu', 'เมนู'], ['store', 'ข้อมูลร้าน'], ['finance', 'การเงิน'], ['notifications', 'แจ้งเตือน'], ['settings', 'ตั้งค่า']];
 
   const app = (active, content) => {
     const nav = links.map(([key, label]) => `<a class="${active === key ? 'active' : ''}" href="${key}.html">${label}</a>`).join('');
@@ -337,10 +337,28 @@
     addEventListener('pagehide', () => { stop(); stopSales(); }, { once: true });
   }
 
+  async function notifications() {
+    const ctx = await gate('notifications', `<div class="mpa-page-head"><div><h1>การแจ้งเตือน</h1><p>ออร์เดอร์ใหม่ ยอดเงินเข้า และข่าวจากระบบถึงร้านของคุณ</p></div><div style="display:grid;gap:5px;justify-items:end"><button id="refreshNotifications" class="mpa-button mpa-button-secondary" type="button">รีเฟรช</button><small id="notificationsSyncStatus" class="mpa-muted" aria-live="polite">กำลังเตรียมการแจ้งเตือน</small></div></div><section id="notifications" class="mpa-card">${M.ui.loading('กำลังโหลดการแจ้งเตือน…')}</section>`);
+    if (!ctx) return;
+    const scope = pageScope('merchant:notifications');
+    const path = `mobile_notifications?select=id,title,body,data,status,read_at,created_at&recipient_id=eq.${encodeURIComponent(ctx.user.id)}&order=created_at.desc&limit=100`;
+    const targetOf = row => {
+      const link = String(row.data?.deep_link || '');
+      if (/finance/i.test(link) || /เงินเข้า/.test(String(row.title || ''))) return 'finance.html';
+      if (row.data?.order_id || row.data?.orderId) return 'orders.html';
+      return '';
+    };
+    const markRead = async id => { await M.request(`mobile_notifications?id=eq.${encodeURIComponent(id)}&recipient_id=eq.${encodeURIComponent(ctx.user.id)}`, { method: 'PATCH', private: true, headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ read_at: M.ui.nowIso() }) }); };
+    const render = rows => { const host = $('#notifications'); host.innerHTML = rows?.length ? `<div style="display:grid;gap:10px">${rows.map(row => `<article data-notification-id="${h(row.id)}" class="merchant-notice-card ${row.read_at ? '' : 'merchant-notice-unread'}"><div class="merchant-notice-head"><strong>${h(row.title || 'แจ้งเตือน')}</strong><span class="mpa-badge">${h(row.status || 'แจ้งเตือน')}</span></div><p class="mpa-muted">${h(row.body || 'ไม่มีรายละเอียด')}</p><small class="mpa-muted">${row.created_at ? new Date(row.created_at).toLocaleString('th-TH') : '-'}</small><div class="merchant-notice-actions">${targetOf(row) ? `<a class="mpa-button mpa-button-secondary" style="padding:7px 9px;font-size:11px" href="${h(targetOf(row))}">เปิดหน้าปลายทาง</a>` : ''}${row.read_at ? '<span class="mpa-muted" style="padding:7px 0;font-size:11px">อ่านแล้ว</span>' : `<button class="mpa-button mpa-button-secondary" style="padding:7px 9px;font-size:11px" type="button" data-mark-merchant-notification="${h(row.id)}">ทำเครื่องหมายว่าอ่านแล้ว</button>`}</div></article>`).join('')}</div>` : M.ui.empty('ยังไม่มีการแจ้งเตือน'); host.querySelectorAll('[data-mark-merchant-notification]').forEach(button => button.onclick = async () => { button.disabled = true; try { await markRead(button.dataset.markMerchantNotification); button.closest('[data-notification-id]')?.classList.remove('merchant-notice-unread'); button.replaceWith(document.createTextNode('อ่านแล้ว')); } catch (error) { button.disabled = false; M.ui.setNotice(error.message || 'ทำเครื่องหมายอ่านไม่สำเร็จ', 'error'); } }); };
+    const load = async forceFresh => { const button = $('#refreshNotifications'); if (button) button.disabled = true; try { const rows = await scope.request(path, { private: true, forceFresh, cacheTtlMs: 15_000, cacheKey: `merchant-notifications:${ctx.user.id}` }); render(rows || []); $('#notificationsSyncStatus').textContent = `อัปเดตล่าสุด ${new Date().toLocaleTimeString('th-TH')}`; } catch (err) { $('#notificationsSyncStatus').textContent = 'อัปเดตไม่สำเร็จ · ระบบจะลองใหม่อัตโนมัติ'; if (!forceFresh) $('#notifications').innerHTML = M.ui.error('โหลดการแจ้งเตือนไม่สำเร็จ', err.message); else M.ui.setNotice(`อัปเดตการแจ้งเตือนไม่สำเร็จ: ${err.message}`, 'error'); } finally { if (button) button.disabled = false; } };
+    $('#refreshNotifications').onclick = () => load(true); await load(false);
+    const stop = M.network.startBackgroundSync({ key: `merchant-notifications:${ctx.user.id}`, intervalMs: 30_000, task: async () => { await load(true); return { changed: true }; }, onError: error => { $('#notificationsSyncStatus').textContent = 'อัปเดตไม่สำเร็จ · ระบบจะลองใหม่อัตโนมัติ'; M.ui.setNotice(`อัปเดตการแจ้งเตือนไม่สำเร็จ: ${error.message}`, 'error'); } }); addEventListener('pagehide', stop, { once: true });
+  }
+
   async function settings() {
     const ctx = await gate('settings', `<div id="merchant-recognition-host"></div><section class="mpa-card"><h1>ตั้งค่าร้านค้า</h1><p class="mpa-muted">การตั้งค่าเฉพาะร้าน ไม่กระทบกติกากลางของแพลตฟอร์ม</p><button class="mpa-button mpa-button-secondary" id="out">ออกจากระบบ</button></section>`);
     if (ctx) { $('#out').onclick = () => M.auth.signOut('login.html'); void window.APServiceMerchantRecognition?.mount({ host: $('#merchant-recognition-host'), user: ctx.user }); }
   }
 
-  ({ login, dashboard, orders, menu, store, finance, settings }[page] || login)();
+  ({ login, dashboard, orders, menu, store, finance, notifications, settings }[page] || login)();
 })();
