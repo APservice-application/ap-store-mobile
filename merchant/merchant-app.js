@@ -329,7 +329,8 @@
       const openRequest = rows.find(row => ['requested', 'approved'].includes(String(row.status || '').toLowerCase()));
       const payoutLine = ctx.store.payout_account_number ? `โอนเข้าบัญชี ${h(ctx.store.payout_bank_name || '')} ${h(maskedAccount(ctx.store.payout_account_number))}` : 'ยังไม่มีบัญชีรับเงินที่ตั้งไว้ กรุณาติดต่อแอดมิน';
       const history = rows.length ? rows.map(row => `<article class="merchant-sales-row"><div><strong>${h(amount(row.amount))}</strong><span>${h(dateLabel(row.requested_at))} · ${h(withdrawalStatusLabel(row.status))}${row.payment_reference ? ` · เลขโอน ${h(row.payment_reference)}` : ''}${row.admin_note ? ` · หมายเหตุแอดมิน: ${h(row.admin_note)}` : ''}</span></div></article>`).join('') : '<div class="merchant-sales-empty">ยังไม่เคยยื่นคำขอถอน</div>';
-      const form = (!openRequest && available > 0) ? `<form id="withdrawalForm" class="mpa-form" style="margin-top:12px"><label class="mpa-field"><span>ยอดที่ต้องการถอน (สูงสุด ${h(amount(available))} ตามบิลที่ถอนได้จริง)</span><input id="withdrawAmount" type="number" min="1" step="0.01" max="${available}" value="${available}" required></label><label class="mpa-field" style="flex-direction:row;align-items:center;gap:8px"><input id="withdrawFull" type="checkbox" checked style="width:auto"> ถอนเต็มยอด ${h(amount(available))}</label><label class="mpa-field"><span>หมายเหตุถึงแอดมิน (ไม่บังคับ)</span><textarea id="withdrawNote" rows="2" maxlength="500" placeholder="เช่น ขอโอนเข้าบัญชีหลัก"></textarea></label><button class="mpa-button" type="submit">ยื่นคำขอถอน</button><p class="mpa-muted" data-withdraw-status aria-live="polite"></p></form>` : '';
+      const canRequest = !openRequest && available > 0;
+      const form = `<form id="withdrawalForm" class="mpa-form" style="margin-top:12px"><label class="mpa-field"><span>ยอดที่ต้องการถอน (สูงสุด ${h(amount(available))} ตามบิลที่ถอนได้จริง)</span><input id="withdrawAmount" type="number" min="1" step="0.01" max="${available}" value="${available}" required ${canRequest ? '' : 'disabled'}></label><label class="mpa-field" style="flex-direction:row;align-items:center;gap:8px"><input id="withdrawFull" type="checkbox" checked style="width:auto" ${canRequest ? '' : 'disabled'}> ถอนเต็มยอด ${h(amount(available))}</label><label class="mpa-field"><span>หมายเหตุถึงแอดมิน (ไม่บังคับ)</span><textarea id="withdrawNote" rows="2" maxlength="500" placeholder="เช่น ขอโอนเข้าบัญชีหลัก" ${canRequest ? '' : 'disabled'}></textarea></label><button class="mpa-button" type="submit" ${canRequest ? '' : 'disabled'}>ยื่นคำขอถอน</button><p class="mpa-muted" data-withdraw-status aria-live="polite">${canRequest ? '' : 'ยื่นคำขอได้เมื่อมียอดพร้อมถอนและไม่มีคำขอค้าง'}</p></form>`;
       const notice = openRequest ? `<p class="mpa-muted">มีคำขอถอน ${h(amount(openRequest.amount))} สถานะ “${h(withdrawalStatusLabel(openRequest.status))}” รอผลก่อนยื่นคำขอใหม่</p>` : (available <= 0 ? '<p class="mpa-muted">ยังไม่มียอดพร้อมถอน ยอดจะเกิดจากออร์เดอร์ที่ปิดสำเร็จหลังหัก GP แล้ว</p>' : '');
       $('#wallet').innerHTML = `<div><span class="mpa-kicker">กระเป๋าร้าน</span><h2>ยอดถอนได้และคำขอถอนเงิน</h2><p class="mpa-muted">${h(payoutLine)} · ยอดคำนวณจากบิลที่ปิดสำเร็จและยังไม่เคยเบิก</p></div><div class="merchant-sales-summary"><article><small>ถอนได้</small><strong>${h(amount(available))}</strong></article><article><small>รอดำเนินการ</small><strong>${h(amount(processing))}</strong></article><article><small>จ่ายแล้ว</small><strong>${h(amount(paid))}</strong></article></div>${notice}${form}<details style="margin-top:12px"><summary><strong>ประวัติคำขอถอน (${rows.length})</strong></summary><div style="display:grid;gap:8px;margin-top:8px">${history}</div></details>`;
       const formNode = $('#withdrawalForm');
@@ -390,8 +391,26 @@
   }
 
   async function settings() {
-    const ctx = await gate('settings', `<div id="merchant-recognition-host"></div><section class="mpa-card"><h1>ตั้งค่าร้านค้า</h1><p class="mpa-muted">การตั้งค่าเฉพาะร้าน ไม่กระทบกติกากลางของแพลตฟอร์ม</p><button class="mpa-button mpa-button-secondary" id="out">ออกจากระบบ</button></section>`);
-    if (ctx) { $('#out').onclick = () => M.auth.signOut('login.html'); void window.APServiceMerchantRecognition?.mount({ host: $('#merchant-recognition-host'), user: ctx.user }); }
+    const ctx = await gate('settings', `<div id="merchant-recognition-host"></div><section class="mpa-card"><h1>ตั้งค่าร้านค้า</h1><p class="mpa-muted">การตั้งค่าเฉพาะร้าน ไม่กระทบกติกากลางของแพลตฟอร์ม</p><button class="mpa-button mpa-button-secondary" id="out">ออกจากระบบ</button></section><section class="mpa-card" style="margin-top:16px"><h2 style="margin-top:0">เปลี่ยนรหัสผ่าน</h2><form id="passwordForm" style="display:grid;gap:10px;max-width:420px"><label class="mpa-field"><span>รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)</span><input id="newPassword" type="password" autocomplete="new-password" required minlength="8"></label><label class="mpa-field"><span>ยืนยันรหัสผ่านใหม่</span><input id="confirmPassword" type="password" autocomplete="new-password" required minlength="8"></label><div><button class="mpa-button" type="submit">เปลี่ยนรหัสผ่าน</button></div><p class="mpa-muted" data-password-status aria-live="polite" style="margin:0"></p></form></section>`);
+    if (ctx) {
+      $('#out').onclick = () => M.auth.signOut('login.html');
+      void window.APServiceMerchantRecognition?.mount({ host: $('#merchant-recognition-host'), user: ctx.user });
+      $('#passwordForm').onsubmit = async event => {
+        event.preventDefault();
+        const status = $('#passwordForm [data-password-status]');
+        const submit = $('#passwordForm [type="submit"]');
+        const next = $('#newPassword').value, confirm = $('#confirmPassword').value;
+        if (next !== confirm) { status.textContent = 'รหัสผ่านใหม่กับยืนยันรหัสผ่านไม่ตรงกัน'; return; }
+        submit.disabled = true; status.textContent = 'กำลังเปลี่ยนรหัสผ่าน…';
+        try {
+          await M.auth.updatePassword(next);
+          status.textContent = 'เปลี่ยนรหัสผ่านแล้ว ครั้งต่อไปให้ใช้รหัสใหม่';
+          M.ui.setNotice('เปลี่ยนรหัสผ่านแล้ว');
+          $('#passwordForm').reset();
+        } catch (error) { status.textContent = error?.message || 'เปลี่ยนรหัสผ่านไม่สำเร็จ'; M.ui.setNotice(status.textContent, 'error'); }
+        submit.disabled = false;
+      };
+    }
   }
 
   ({ login, dashboard, orders, menu, store, finance, notifications, settings }[page] || login)();
