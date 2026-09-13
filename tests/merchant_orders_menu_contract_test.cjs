@@ -12,7 +12,7 @@ assert.match(app, /async function orders\(\)/, 'orders route must remain availab
 assert.match(app, /data-order-group="\$\{section\.key\}"/, 'orders must be grouped for new, active, and history work');
 assert.match(app, /C\.order\.canTransition/, 'status choices must remain governed by Shared Core');
 assert.match(app, /merchant-orders:\$\{ctx\.store\.id\}/, 'orders must retain scoped refresh cache');
-assert.match(app, /menu_categories\?select=id,name,icon,sort_order,active/, 'menu must read real central categories');
+assert.match(app, /action: 'merchant_menu_list'/, 'menu must read items and categories through the owner-scoped server action');
 assert.match(app, /data-menu-edit/, 'menu cards must expose an edit workflow');
 assert.match(app, /data-menu-available/, 'menu cards must retain sale availability control');
 assert.match(app, /uploadPublicCatalogImage/, 'menu image upload must reuse shared media pipeline');
@@ -30,4 +30,9 @@ assert.match(app, /releasedOrdersOnly\(\)/, 'orders และ dashboard ต้�
 assert.match(app, /status=not\.in\.\(/, 'คำขอออเดอร์ร้านต้องตัดสถานะก่อนปล่อยออกที่ฝั่งเซิร์ฟเวอร์');
 assert.match(app, /S\.ADMIN_REVIEW \|\| 'รอแอดมินตรวจสอบ'/, 'ร้านค้าต้องไม่เห็นออเดอร์ที่รอแอดมินตรวจสอบ');
 assert.match(app, /S\.PAYMENT_REVIEW \|\| 'รอตรวจสอบการชำระเงิน'/, 'ร้านค้าต้องไม่เห็นออเดอร์ที่รอตรวจสอบการชำระเงิน');
+assert.match(app, /delivery_order_items\?select=order_id,name,emoji,unit_price,quantity/, 'การ์ดออร์เดอร์ต้องดึงรายการอาหารมาแสดงให้ร้านเห็นว่าต้องทำอะไร');
+assert.match(app, /mpa-order-card__items/, 'การ์ดออร์เดอร์ต้อง render รายการอาหารในแต่ละบิล');
+assert.match(app, /action: 'merchant_menu_write'/, 'เมนูต้องบันทึกผ่าน server action ที่มีสิทธิ์เจ้าของร้าน');
+assert.match(app, /action: 'merchant_update_store'/, 'ข้อมูลร้านต้องบันทึกผ่าน server action ที่มีสิทธิ์เจ้าของร้าน');
+assert.doesNotMatch(app, /M\.request\(`menu_items\?/, 'ห้ามเขียนเมนูผ่าน REST ตรงที่ RLS บล็อก');
 console.log('merchant_orders_menu_contract_test: passed');
